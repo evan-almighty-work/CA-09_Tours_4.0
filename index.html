@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Tour Tracker" />
+  <title>Tour Tracker PWA</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --surface: rgba(255,255,255,0.92);
+      --text: #0f172a;
+      --muted: #5b6473;
+      --border: #d9e1ec;
+      --accent: #1d4ed8;
+      --accent-soft: #dbeafe;
+      --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+      --requested: #fef3c7;
+      --confirmation: #dbeafe;
+      --booked: #dcfce7;
+      --completed: #e5e7eb;
+      --needs: #fee2e2;
+      --needs-text: #991b1b;
+      --danger: #b91c1c;
+      --success: #15803d;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(191,219,254,0.7), transparent 28%),
+        radial-gradient(circle at top right, rgba(220,252,231,0.6), transparent 24%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 32px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(15,23,42,0.96), rgba(30,64,175,0.93));
+      color: white;
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 6px;
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: rgba(255,255,255,0.82);
+      max-width: 760px;
+      line-height: 1.45;
+    }
+
+    .hero-actions, .actions, .list-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.55);
+      box-shadow: var(--shadow);
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+    }
+
+    label {
+      display: block;
+      font-size: 0.87rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea, button {
+      font: inherit;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 11px 12px;
+      background: rgba(255,255,255,0.92);
+      color: var(--text);
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+    }
+
+    button.secondary {
+      background: rgba(255,255,255,0.9);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    button.ghost {
+      background: var(--accent-soft);
+      color: #1e3a8a;
+    }
+
+    button.danger { background: var(--danger); }
+    button.success { background: var(--success); }
+
+    .row, .row-3 {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .row { grid-template-columns: 1fr 1fr; }
+    .row-3 { grid-template-columns: repeat(3,1fr); }
+    .stack { margin-bottom: 10px; }
+
+    .tour-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.76);
+      min-height: 52px;
+    }
+
+    .tour-block {
+      background: rgba(255,255,255,0.8);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .calendar-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .legend span, .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .weekday, .day {
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.82);
+      padding: 8px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 800;
+      min-height: auto;
+    }
+
+    .day { min-height: 122px; }
+    .day-num { font-size: 0.84rem; font-weight: 800; margin-bottom: 8px; }
+    .today { outline: 2px solid rgba(29,78,216,0.22); background: rgba(239,246,255,0.98); }
+
+    .cal-item {
+      font-size: 0.72rem;
+      line-height: 1.25;
+      padding: 6px;
+      border-radius: 12px;
+      margin-bottom: 6px;
+      border: 1px solid rgba(15,23,42,0.05);
+      font-weight: 600;
+    }
+
+    .status-requested { background: var(--requested); }
+    .status-confirmation { background: var(--confirmation); }
+    .status-booked { background: var(--booked); }
+    .status-completed { background: var(--completed); }
+    .status-needs { background: var(--needs); color: var(--needs-text); }
+
+    .searchbar { margin-bottom: 12px; }
+    .list { display: grid; gap: 10px; }
+
+    .item {
+      background: rgba(255,255,255,0.85);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 8px 14px;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+
+    .template {
+      background: #0f172a;
+      color: #e5eefb;
+      border-radius: 18px;
+      padding: 12px;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      max-height: 320px;
+      overflow: auto;
+      font-size: 0.87rem;
+    }
+
+    .notice, .install-banner {
+      border-radius: 18px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      line-height: 1.45;
+      font-size: 0.9rem;
+    }
+
+    .notice {
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .install-banner {
+      display: none;
+      background: #eff6ff;
+      color: #1e3a8a;
+      border: 1px solid #bfdbfe;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .empty, .muted { color: var(--muted); }
+    .small { font-size: 0.82rem; }
+    .footer-note { margin-top: 10px; color: var(--muted); font-size: 0.82rem; line-height: 1.45; }
+
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+      .stat-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .shell { padding: 12px; }
+      .hero { padding: 16px; border-radius: 24px; }
+      .hero h1 { font-size: 1.6rem; }
+      .row, .row-3, .tour-grid, .item-grid, .stat-row { grid-template-columns: 1fr; }
+      .calendar { gap: 6px; }
+      .day { min-height: 98px; padding: 6px; }
+      .weekday { padding: 6px; }
+      .cal-item { font-size: 0.67rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="hero">
+      <div>
+        <h1>Congressional Tour Tracker</h1>
+        <p>Installable mobile-first tracker for constituent tour requests. Groups are the primary record, with shared action status and shared email generation across all tours in that group.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="secondary" id="exportBtn">Export</button>
+        <button class="secondary" id="importBtn">Import</button>
+        <button class="success" id="installBtn" style="display:none;">Install app</button>
+        <input type="file" id="importFile" accept="application/json" hidden />
+      </div>
+    </div>
+
+    <div class="install-banner" id="iosInstallBanner">
+      <div><strong>Install on iPhone:</strong> Tap Share, then <strong>Add to Home Screen</strong>.</div>
+      <button class="secondary" id="dismissIosBanner">Dismiss</button>
+    </div>
+
+    <div class="notice">
+      This PWA works offline after first load. GitHub Pages alone still cannot send true background iPhone push notifications, so reminders are handled through browser alerts while open and downloadable calendar reminder files.
+    </div>
+
+    <div class="stat-row" id="statsRow"></div>
+
+    <div class="layout">
+      <div>
+        <div class="card">
+          <h2>Quick add group request</h2>
+
+          <div class="stack">
+            <label for="groupName">Group / constituent name</label>
+            <input id="groupName" placeholder="Smith Family or West Scranton HS" />
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="contactName">Contact name</label>
+              <input id="contactName" placeholder="Primary contact" />
+            </div>
+            <div>
+              <label for="contactEmail">Contact email</label>
+              <input id="contactEmail" type="email" placeholder="name@example.com" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="partySize">Party size</label>
+              <input id="partySize" type="number" min="1" placeholder="10" />
+            </div>
+            <div>
+              <label for="staffNotes">General notes</label>
+              <input id="staffNotes" placeholder="Accessibility, school group, alternates" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="groupStatus">Group action status</label>
+              <select id="groupStatus"></select>
+            </div>
+            <div>
+              <label for="actionDate">Booking opens / action date</label>
+              <input id="actionDate" type="date" />
+            </div>
+          </div>
+
+          <div class="stack">
+            <label for="actionTime">Action time</label>
+            <input id="actionTime" type="time" value="09:00" />
+          </div>
+
+          <label>Select up to 5 tours</label>
+          <div class="tour-grid" id="tourSelector"></div>
+          <div id="tourBlocks"></div>
+
+          <div class="actions">
+            <button id="saveBtn">Save group</button>
+            <button class="ghost" id="calendarReminderBtn">Add reminder file</button>
+            <button class="secondary" id="enableNotificationsBtn">Enable alerts</button>
+          </div>
+
+          <div class="footer-note">
+            One saved group can contain up to 5 tours. Action status, action date, reminders, and email generation all apply to the full group.
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>Group email templates</h2>
+          <div class="stack">
+            <label for="templateMode">Template mode</label>
+            <select id="templateMode">
+              <option value="request">Booking request</option>
+              <option value="unavailable">Unavailable / unable to book</option>
+            </select>
+          </div>
+          <div class="actions" style="margin-top:0; margin-bottom:12px;">
+            <button id="generateTemplateBtn">Generate</button>
+            <button class="secondary" id="copyTemplateBtn">Copy</button>
+          </div>
+          <div class="template" id="templateOutput">Generate a group email template to preview it here.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="calendar-head">
+            <button class="secondary" id="prevMonthBtn">← Month</button>
+            <h2 id="calendarTitle" style="margin:0;"></h2>
+            <button class="secondary" id="nextMonthBtn">Month →</button>
+          </div>
+
+          <div class="legend">
+            <span><i class="dot" style="background: var(--requested);"></i>Requested</span>
+            <span><i class="dot" style="background: var(--confirmation);"></i>Confirmation sent</span>
+            <span><i class="dot" style="background: var(--booked);"></i>Booked</span>
+            <span><i class="dot" style="background: var(--completed);"></i>Completed</span>
+            <span><i class="dot" style="background: var(--needs);"></i>Needs action</span>
+          </div>
+
+          <div class="calendar" id="calendarGrid"></div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <div class="item-top" style="margin-bottom:12px;">
+            <div>
+              <h2 style="margin:0 0 4px;">Saved groups</h2>
+              <div class="small muted" id="groupCount"></div>
+            </div>
+            <div class="tag" id="openActionsTag">0 need action</div>
+          </div>
+
+          <div class="searchbar">
+            <input id="searchInput" placeholder="Search by group, contact, email, or tour type" />
+          </div>
+
+          <div class="list" id="groupList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TOUR_OPTIONS = [
+      'Capitol Tour',
+      'Library of Congress Tour',
+      'White House Tour',
+      'SCOTUS Tour',
+      'FBI Tour',
+      'BEP Tour'
+    ];
+
+    const STATUS_OPTIONS = [
+      'Tour requested by constituent',
+      'Date confirmation email sent',
+      'Tours booked',
+      'Tour window completed',
+      'Needs action!'
+    ];
+
+    const STATUS_CLASS = {
+      'Tour requested by constituent': 'status-requested',
+      'Date confirmation email sent': 'status-confirmation',
+      'Tours booked': 'status-booked',
+      'Tour window completed': 'status-completed',
+      'Needs action!': 'status-needs'
+    };
+
+    const STORAGE_KEY = 'tourTrackerGroupPwaV1';
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let deferredPrompt = null;
+
+    const state = {
+      groups: loadGroups(),
+      selectedTours: [],
+      currentDate: new Date(),
+      search: ''
+    };
+
+    const els = {
+      groupName: document.getElementById('groupName'),
+      contactName: document.getElementById('contactName'),
+      contactEmail: document.getElementById('contactEmail'),
+      partySize: document.getElementById('partySize'),
+      staffNotes: document.getElementById('staffNotes'),
+      groupStatus: document.getElementById('groupStatus'),
+      actionDate: document.getElementById('actionDate'),
+      actionTime: document.getElementById('actionTime'),
+      tourSelector: document.getElementById('tourSelector'),
+      tourBlocks: document.getElementById('tourBlocks'),
+      saveBtn: document.getElementById('saveBtn'),
+      calendarReminderBtn: document.getElementById('calendarReminderBtn'),
+      enableNotificationsBtn: document.getElementById('enableNotificationsBtn'),
+      templateMode: document.getElementById('templateMode'),
+      generateTemplateBtn: document.getElementById('generateTemplateBtn'),
+      copyTemplateBtn: document.getElementById('copyTemplateBtn'),
+      templateOutput: document.getElementById('templateOutput'),
+      prevMonthBtn: document.getElementById('prevMonthBtn'),
+      nextMonthBtn: document.getElementById('nextMonthBtn'),
+      calendarTitle: document.getElementById('calendarTitle'),
+      calendarGrid: document.getElementById('calendarGrid'),
+      groupCount: document.getElementById('groupCount'),
+      openActionsTag: document.getElementById('openActionsTag'),
+      groupList: document.getElementById('groupList'),
+      searchInput: document.getElementById('searchInput'),
+      statsRow: document.getElementById('statsRow'),
+      exportBtn: document.getElementById('exportBtn'),
+      importBtn: document.getElementById('importBtn'),
+      importFile: document.getElementById('importFile'),
+      installBtn: document.getElementById('installBtn'),
+      iosInstallBanner: document.getElementById('iosInstallBanner'),
+      dismissIosBanner: document.getElementById('dismissIosBanner')
+    };
+
+    init();
+
+    function init() {
+      STATUS_OPTIONS.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        els.groupStatus.appendChild(opt);
+      });
+
+      renderSelector();
+      renderTourBlocks();
+      renderStats();
+      renderCalendar();
+      renderList();
+      generateTemplate();
+      wire();
+      setupPWA();
+      runDueActionCheck();
+    }
+
+    function wire() {
+      els.saveBtn.addEventListener('click', saveGroup);
+      els.calendarReminderBtn.addEventListener('click', createGroupReminder);
+      els.enableNotificationsBtn.addEventListener('click', enableNotifications);
+      els.generateTemplateBtn.addEventListener('click', generateTemplate);
+      els.copyTemplateBtn.addEventListener('click', () => copyText(els.templateOutput.textContent));
+      els.prevMonthBtn.addEventListener('click', () => shiftMonth(-1));
+      els.nextMonthBtn.addEventListener('click', () => shiftMonth(1));
+      els.searchInput.addEventListener('input', e => { state.search = e.target.value.toLowerCase().trim(); renderList(); });
+      els.templateMode.addEventListener('change', generateTemplate);
+      els.exportBtn.addEventListener('click', exportData);
+      els.importBtn.addEventListener('click', () => els.importFile.click());
+      els.importFile.addEventListener('change', importData);
+      els.installBtn.addEventListener('click', installApp);
+      els.dismissIosBanner.addEventListener('click', () => els.iosInstallBanner.style.display = 'none');
+    }
+
+    function setupPWA() {
+      if ('serviceWorker' in navigator) registerServiceWorker();
+      injectManifest();
+      window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredPrompt = e;
+        els.installBtn.style.display = 'inline-flex';
+      });
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      if (isIOS && !isStandalone) els.iosInstallBanner.style.display = 'flex';
+    }
+
+    async function installApp() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      els.installBtn.style.display = 'none';
+    }
+
+    function injectManifest() {
+      const manifest = {
+        name: 'Congressional Tour Tracker',
+        short_name: 'Tour Tracker',
+        start_url: './',
+        display: 'standalone',
+        background_color: '#f3f6fb',
+        theme_color: '#0f172a',
+        icons: [
+          { src: generateIcon(), sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
+          { src: generateIcon(), sizes: '512x512', type: 'image/svg+xml', purpose: 'any' }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = url;
+      document.head.appendChild(link);
+    }
+
+    function generateIcon() {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#0f172a"/><rect x="78" y="92" width="356" height="328" rx="38" fill="#ffffff"/><rect x="116" y="62" width="62" height="86" rx="20" fill="#93c5fd"/><rect x="334" y="62" width="62" height="86" rx="20" fill="#93c5fd"/><rect x="110" y="176" width="292" height="30" rx="15" fill="#dbeafe"/><rect x="110" y="232" width="292" height="30" rx="15" fill="#dcfce7"/><rect x="110" y="288" width="292" height="30" rx="15" fill="#fef3c7"/></svg>`;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    async function registerServiceWorker() {
+      const sw = `
+        const CACHE = 'tour-tracker-group-pwa-v1';
+        self.addEventListener('install', event => {
+          event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['./'])));
+          self.skipWaiting();
+        });
+        self.addEventListener('activate', event => {
+          event.waitUntil(self.clients.claim());
+        });
+        self.addEventListener('fetch', event => {
+          if (event.request.method !== 'GET') return;
+          event.respondWith(
+            caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+              const copy = response.clone();
+              caches.open(CACHE).then(cache => cache.put(event.request, copy));
+              return response;
+            }).catch(() => caches.match('./')))
+          );
+        });
+      `;
+      const blob = new Blob([sw], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+      try { await navigator.serviceWorker.register(swUrl); } catch (e) {}
+    }
+
+    function renderSelector() {
+      els.tourSelector.innerHTML = '';
+      TOUR_OPTIONS.forEach(tour => {
+        const label = document.createElement('label');
+        label.className = 'chip';
+        label.innerHTML = `<input type="checkbox" value="${tour}" ${state.selectedTours.includes(tour) ? 'checked' : ''}> <span>${tour}</span>`;
+        label.querySelector('input').addEventListener('change', e => {
+          if (e.target.checked) {
+            if (state.selectedTours.length >= 5) {
+              e.target.checked = false;
+              alert('You can select up to 5 tours at one time.');
+              return;
+            }
+            state.selectedTours.push(tour);
+          } else {
+            state.selectedTours = state.selectedTours.filter(t => t !== tour);
+          }
+          renderTourBlocks();
+          generateTemplate();
+        });
+        els.tourSelector.appendChild(label);
+      });
+    }
+
+    function renderTourBlocks() {
+      els.tourBlocks.innerHTML = '';
+      if (!state.selectedTours.length) {
+        els.tourBlocks.innerHTML = '<div class="empty">Select one or more tours to enter preferred dates and times.</div>';
+        return;
+      }
+
+      state.selectedTours.forEach((tour, i) => {
+        const div = document.createElement('div');
+        div.className = 'tour-block';
+        div.innerHTML = `
+          <div class="item-top" style="margin-bottom:10px;">
+            <strong>${tour}</strong>
+            <span class="tag">Tour ${i + 1}</span>
+          </div>
+          <div class="row">
+            <div>
+              <label>Preferred date</label>
+              <input type="date" data-tour="${tour}" data-field="date" />
+            </div>
+            <div>
+              <label>Preferred time</label>
+              <input type="time" data-tour="${tour}" data-field="time" value="10:00" />
+            </div>
+          </div>
+          <div>
+            <label>Tour-specific notes</label>
+            <input data-tour="${tour}" data-field="notes" placeholder="Alt dates, school breakdown, booking details" />
+          </div>
+        `;
+        els.tourBlocks.appendChild(div);
+      });
+    }
+
+    function saveGroup() {
+      const groupName = els.groupName.value.trim();
+      if (!groupName) return alert('Enter a group or constituent name.');
+      if (!state.selectedTours.length) return alert('Select at least one tour.');
+
+      const group = {
+        id: crypto.randomUUID(),
+        groupName,
+        contactName: els.contactName.value.trim(),
+        contactEmail: els.contactEmail.value.trim(),
+        partySize: els.partySize.value.trim(),
+        staffNotes: els.staffNotes.value.trim(),
+        actionStatus: els.groupStatus.value || STATUS_OPTIONS[0],
+        actionDate: els.actionDate.value,
+        actionTime: els.actionTime.value || '09:00',
+        createdAt: new Date().toISOString(),
+        tours: state.selectedTours.map(tour => ({
+          id: crypto.randomUUID(),
+          tourType: tour,
+          date: getFieldValue(tour, 'date'),
+          time: getFieldValue(tour, 'time'),
+          notes: getFieldValue(tour, 'notes')
+        }))
+      };
+
+      state.groups = [group, ...state.groups].sort(sortGroups);
+      persist();
+      clearForm();
+      renderStats();
+      renderCalendar();
+      renderList();
+      runDueActionCheck();
+      alert(`1 group saved with ${group.tours.length} tour${group.tours.length === 1 ? '' : 's'}.`);
+    }
+
+    function clearForm() {
+      els.groupName.value = '';
+      els.contactName.value = '';
+      els.contactEmail.value = '';
+      els.partySize.value = '';
+      els.staffNotes.value = '';
+      els.groupStatus.value = STATUS_OPTIONS[0];
+      els.actionDate.value = '';
+      els.actionTime.value = '09:00';
+      state.selectedTours = [];
+      renderSelector();
+      renderTourBlocks();
+      generateTemplate();
+    }
+
+    function renderStats() {
+      const today = todayString();
+      const needAction = state.groups.filter(groupNeedsAttention).length;
+      const booked = state.groups.filter(g => g.actionStatus === 'Tours booked').length;
+      const upcoming = state.groups.reduce((sum, g) => sum + g.tours.filter(t => t.date && t.date >= today).length, 0);
+      const groups = state.groups.length;
+      els.statsRow.innerHTML = [
+        ['Open actions', needAction],
+        ['Groups booked', booked],
+        ['Upcoming tours', upcoming],
+        ['Groups tracked', groups]
+      ].map(([label, value]) => `<div class="stat"><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`).join('');
+    }
+
+    function renderCalendar() {
+      const month = state.currentDate.getMonth();
+      const year = state.currentDate.getFullYear();
+      els.calendarTitle.textContent = `${MONTHS[month]} ${year}`;
+      els.calendarGrid.innerHTML = '';
+
+      WEEKDAYS.forEach(day => {
+        const div = document.createElement('div');
+        div.className = 'weekday';
+        div.textContent = day;
+        els.calendarGrid.appendChild(div);
+      });
+
+      const firstDay = new Date(year, month, 1);
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const startIndex = firstDay.getDay();
+      const today = todayString();
+
+      for (let i = 0; i < startIndex; i++) {
+        const blank = document.createElement('div');
+        blank.className = 'day';
+        blank.style.visibility = 'hidden';
+        els.calendarGrid.appendChild(blank);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = formatDate(year, month, day);
+        const matches = [];
+        state.groups.forEach(group => group.tours.forEach(tour => { if (tour.date === date) matches.push({ group, tour }); }));
+        const div = document.createElement('div');
+        div.className = 'day' + (date === today ? ' today' : '');
+        div.innerHTML = `<div class="day-num">${day}</div>`;
+        matches.slice(0, 4).forEach(({ group, tour }) => {
+          const item = document.createElement('div');
+          item.className = `cal-item ${STATUS_CLASS[group.actionStatus] || 'status-requested'}`;
+          item.textContent = `${tour.time || '—'} ${shortTour(tour.tourType)} · ${group.groupName}`;
+          div.appendChild(item);
+        });
+        if (matches.length > 4) {
+          const more = document.createElement('div');
+          more.className = 'cal-item';
+          more.style.background = '#f8fafc';
+          more.textContent = `+${matches.length - 4} more`;
+          div.appendChild(more);
+        }
+        els.calendarGrid.appendChild(div);
+      }
+    }
+
+    function renderList() {
+      const filtered = state.groups.filter(matchesSearch);
+      const openActions = filtered.filter(groupNeedsAttention).length;
+      els.groupCount.textContent = `${filtered.length} shown · ${state.groups.length} total groups`;
+      els.openActionsTag.textContent = `${openActions} need action`;
+      els.groupList.innerHTML = '';
+
+      if (!filtered.length) {
+        els.groupList.innerHTML = '<div class="empty">No groups match your search.</div>';
+        return;
+      }
+
+      filtered.forEach(group => {
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.innerHTML = `
+          <div class="item-top">
+            <div>
+              <strong>${group.groupName}</strong>
+              <div class="small muted">${group.tours.map(t => t.tourType).join(' · ')}</div>
+            </div>
+            <span class="tag ${STATUS_CLASS[group.actionStatus] || 'status-requested'}">${group.actionStatus}</span>
+          </div>
+          <div class="item-grid">
+            <div><strong>Action date:</strong> ${group.actionDate || '—'} ${group.actionTime || ''}</div>
+            <div><strong>Contact:</strong> ${group.contactName || '—'}</div>
+            <div><strong>Email:</strong> ${group.contactEmail || '—'}</div>
+            <div><strong>Party size:</strong> ${group.partySize || '—'}</div>
+            <div><strong>Notes:</strong> ${group.staffNotes || '—'}</div>
+            <div><strong>Tours:</strong> ${group.tours.length}</div>
+          </div>
+          <div style="margin-bottom:10px;">
+            ${group.tours.map(t => `<div class="tag" style="margin:4px 6px 0 0; display:inline-flex;">${t.date || 'No date'} ${t.time || ''} · ${t.tourType}</div>`).join('')}
+          </div>
+          <div class="row">
+            <div>
+              <label class="small">Update group action status</label>
+              <select data-id="${group.id}" data-update="actionStatus">
+                ${STATUS_OPTIONS.map(s => `<option value="${s}" ${s === group.actionStatus ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="small">Update action date</label>
+              <input type="date" value="${group.actionDate || ''}" data-id="${group.id}" data-update="actionDate" />
+            </div>
+          </div>
+          <div class="list-actions">
+            <button class="ghost" data-action="copyRequest" data-id="${group.id}">Copy group request email</button>
+            <button class="secondary" data-action="copyUnavailable" data-id="${group.id}">Copy unavailable email</button>
+            <button class="secondary" data-action="reminder" data-id="${group.id}">Add reminder file</button>
+            <button class="danger" data-action="delete" data-id="${group.id}">Delete group</button>
+          </div>
+        `;
+
+        item.querySelector('[data-update="actionStatus"]').addEventListener('change', e => updateGroup(group.id, { actionStatus: e.target.value }));
+        item.querySelector('[data-update="actionDate"]').addEventListener('change', e => updateGroup(group.id, { actionDate: e.target.value }));
+        item.querySelector('[data-action="copyRequest"]').addEventListener('click', () => copyText(buildTemplate('request', group)));
+        item.querySelector('[data-action="copyUnavailable"]').addEventListener('click', () => copyText(buildTemplate('unavailable', group)));
+        item.querySelector('[data-action="reminder"]').addEventListener('click', () => downloadReminder(group));
+        item.querySelector('[data-action="delete"]').addEventListener('click', () => {
+          if (confirm(`Delete group ${group.groupName}?`)) {
+            state.groups = state.groups.filter(g => g.id !== group.id);
+            persist();
+            renderStats();
+            renderCalendar();
+            renderList();
+          }
+        });
+
+        els.groupList.appendChild(item);
+      });
+    }
+
+    function updateGroup(id, patch) {
+      state.groups = state.groups.map(g => g.id === id ? { ...g, ...patch } : g).sort(sortGroups);
+      persist();
+      renderStats();
+      renderCalendar();
+      renderList();
+      runDueActionCheck();
+    }
+
+    function generateTemplate() {
+      const previewGroup = {
+        groupName: els.groupName.value.trim() || 'Group Name',
+        contactName: els.contactName.value.trim() || 'Contact Name',
+        contactEmail: els.contactEmail.value.trim() || 'contact@example.com',
+        partySize: els.partySize.value.trim() || '10',
+        staffNotes: els.staffNotes.value.trim() || 'Any relevant notes',
+        actionDate: els.actionDate.value || '2026-04-13',
+        actionTime: els.actionTime.value || '09:00',
+        tours: state.selectedTours.length ? state.selectedTours.map(tour => ({
+          tourType: tour,
+          date: getFieldValue(tour, 'date') || '2026-04-20',
+          time: getFieldValue(tour, 'time') || '10:00'
+        })) : [{ tourType: 'Capitol Tour', date: '2026-04-20', time: '10:00' }]
+      };
+      els.templateOutput.textContent = buildTemplate(els.templateMode.value, previewGroup);
+    }
+
+    function buildTemplate(mode, group) {
+      const actionPretty = group.actionDate ? prettyDate(group.actionDate) : '[booking open date]';
+      const tourLines = group.tours.map(t => `- ${t.tourType}: ${t.date ? prettyDate(t.date) : '[preferred date]'} ${t.time || '[preferred time]'}`).join('\n');
+      if (mode === 'unavailable') {
+        return `Subject: Tour Request Update for ${group.groupName}\n\nHello ${group.contactName || '[Name]'},\n\nThank you for contacting our office regarding your tour request. We reviewed or submitted the request for the tour options below, but we were not able to secure availability for the requested date(s) at this time.\n\nRequested tours:\n${tourLines}\n\nAvailability is limited and controlled by the relevant tour offices. If you would like, please send a few alternate dates and time windows, and our office can review additional options.\n\nBest,\n[Office Name]\n[Staff Name]\n[Phone Number]`;
+      }
+      return `Subject: Tour Request for ${group.groupName}\n\nHello,\n\nOur office is requesting the following tours for this group:\n\nGroup name: ${group.groupName}\nPrimary contact: ${group.contactName || '[Contact name]'}\nContact email: ${group.contactEmail || '[Contact email]'}\nParty size: ${group.partySize || '[Party size]'}\nRequested tours:\n${tourLines}\nAdditional notes: ${group.staffNotes || '[Notes]'}\n\nIf booking does not open until ${actionPretty}${group.actionTime ? ' at ' + group.actionTime : ''}, this reflects the office reminder to submit when the window opens.\n\nThank you,\n[Office Name]\n[Staff Name]\n[Phone Number]`;
+    }
+
+    function createGroupReminder() {
+      const groupName = els.groupName.value.trim() || 'Tour Group';
+      if (!els.actionDate.value) return alert('Add an action date first.');
+      downloadICS(
+        `Book tours for ${groupName}`,
+        `Booking reminder for ${groupName}: ${state.selectedTours.join(', ') || 'tour request'}.`,
+        els.actionDate.value,
+        els.actionTime.value || '09:00'
+      );
+    }
+
+    function downloadReminder(group) {
+      if (!group.actionDate) return alert('This group does not have an action date yet.');
+      downloadICS(
+        `Book tours for ${group.groupName}`,
+        `Tour action reminder for ${group.groupName}. Tours: ${group.tours.map(t => t.tourType).join(', ')}. Contact: ${group.contactName || 'N/A'} ${group.contactEmail || ''}`,
+        group.actionDate,
+        group.actionTime || '09:00'
+      );
+    }
+
+    function downloadICS(title, description, date, time) {
+      const start = new Date(`${date}T${time}:00`);
+      const end = new Date(start.getTime() + 30 * 60000);
+      const lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Tour Tracker//EN',
+        'BEGIN:VEVENT',
+        `UID:${crypto.randomUUID()}`,
+        `DTSTAMP:${toICS(new Date())}`,
+        `DTSTART:${toICS(start)}`,
+        `DTEND:${toICS(end)}`,
+        `SUMMARY:${escapeICS(title)}`,
+        `DESCRIPTION:${escapeICS(description)}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+      const blob = new Blob([lines], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${slugify(title)}.ics`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function enableNotifications() {
+      if (!('Notification' in window)) return alert('This browser does not support notifications.');
+      const result = await Notification.requestPermission();
+      if (result === 'granted') {
+        alert('Alerts enabled. The app will notify you about due group actions while it is open.');
+        runDueActionCheck(true);
+      } else {
+        alert('Notification permission not granted.');
+      }
+    }
+
+    function runDueActionCheck(force = false) {
+      const due = state.groups.filter(groupNeedsAttention);
+      if (due.length && 'Notification' in window && Notification.permission === 'granted' && (force || document.visibilityState === 'visible')) {
+        new Notification('Tour actions due', {
+          body: `${due.length} group(s) need action. ${due.slice(0,3).map(g => g.groupName).join(' | ')}`
+        });
+      }
+    }
+
+    function groupNeedsAttention(group) {
+      const today = todayString();
+      return group.actionStatus === 'Needs action!' || (group.actionDate && group.actionDate <= today && !['Tours booked','Tour window completed'].includes(group.actionStatus));
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(state.groups, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tour-tracker-groups.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (!Array.isArray(parsed)) throw new Error('Invalid file');
+          state.groups = parsed.sort(sortGroups);
+          persist();
+          renderStats();
+          renderCalendar();
+          renderList();
+          alert('Data imported.');
+        } catch {
+          alert('Import failed. Use a valid export file from this app.');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.groups));
+    }
+
+    function loadGroups() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function shiftMonth(delta) {
+      state.currentDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() + delta, 1);
+      renderCalendar();
+    }
+
+    function matchesSearch(group) {
+      if (!state.search) return true;
+      const text = [
+        group.groupName,
+        group.contactName,
+        group.contactEmail,
+        group.staffNotes,
+        ...(group.tours || []).flatMap(t => [t.tourType, t.date, t.time, t.notes])
+      ].join(' ').toLowerCase();
+      return text.includes(state.search);
+    }
+
+    function sortGroups(a, b) {
+      return `${a.actionDate || '9999-99-99'}T${a.actionTime || '99:99'}`.localeCompare(`${b.actionDate || '9999-99-99'}T${b.actionTime || '99:99'}`);
+    }
+
+    function getFieldValue(tour, field) {
+      return document.querySelector(`[data-tour="${cssEscape(tour)}"][data-field="${field}"]`)?.value || '';
+    }
+
+    function formatDate(year, month, day) {
+      return `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
+
+    function todayString() {
+      const d = new Date();
+      return formatDate(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    function prettyDate(dateStr) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      return `${MONTHS[m - 1]} ${d}, ${y}`;
+    }
+
+    function shortTour(name) {
+      return name.replace('Library of Congress', 'LOC').replace('White House', 'WH').replace('Capitol Tour', 'Capitol');
+    }
+
+    function toICS(date) {
+      return `${date.getUTCFullYear()}${String(date.getUTCMonth()+1).padStart(2,'0')}${String(date.getUTCDate()).padStart(2,'0')}T${String(date.getUTCHours()).padStart(2,'0')}${String(date.getUTCMinutes()).padStart(2,'0')}${String(date.getUTCSeconds()).padStart(2,'0')}Z`;
+    }
+
+    function escapeICS(str) {
+      return String(str || '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+    }
+
+    function slugify(str) {
+      return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+
+    function cssEscape(value) {
+      return window.CSS && CSS.escape ? CSS.escape(value) : value.replace(/"/g, '\\"');
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Copied to clipboard.');
+      } catch {
+        alert('Clipboard copy failed on this device/browser.');
+      }
+    }
+  </script>
+</body>
+</html>
